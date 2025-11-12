@@ -8,6 +8,7 @@ import NutritionFacts from './pages/NutritionFacts'
 import ProductSelect from './pages/Comparison/ProductSelect'
 import CriteriaSetting from './pages/Comparison/CriteriaSetting'
 import ComparisonResult from './pages/Comparison/ComparisonResult'
+import Chatbot from './pages/Chatbot'
 //import './App.css'
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
         <Route path="/comparison/select" element={<ProductSelect />} />
         <Route path="/comparison/setting-criteria" element={<CriteriaSetting/>} />
         <Route path="/comparison/result" element={<ComparisonResult />} />
+        <Route path="/chatbot" element={<Chatbot />} />
       </Routes>
     </Router>
   )

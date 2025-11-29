@@ -42,6 +42,7 @@ export default function CriteriaSetting() {
             if (Object.values(criteria).some(direction => !direction)) {
                 return;
             }
+            localStorage.setItem("userStandard", JSON.stringify(criteria));
             navigate("/comparison/result");
         }
     };

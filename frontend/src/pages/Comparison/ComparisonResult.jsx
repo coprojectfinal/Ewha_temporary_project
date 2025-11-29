@@ -1,4 +1,4 @@
-import { useState, useRef, useLayoutEffect } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ResponsiveContainer, BarChart, XAxis, YAxis, Bar, Cell } from 'recharts';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline'
@@ -14,48 +14,54 @@ const rankColors = {
 
 // 프론트 테스트용 비교 결과 데이터
 // 실제는 BE에서 받아오기 (rank 순서대로)
-const resultData = [
-    { 
-        rank: 1,
-        id: "01", // DB 기준 ID
-        name: "하와이안호스트 마카다미아 초콜릿 드링크",
-        score: 75.05,
-        nutriFacts: {
-            "열량": {content: 500, unit: "kcal"},
-            "나트륨": {content: 90, unit: "mg"},
-            "단백질": {content: 7, unit: "g"}
-        }, // 초기값 nutriFacts: {}
-        imageUrl: "https://sitem.ssgcdn.com/18/57/94/item/1000712945718_i2_1200.jpg"
-    },
-    { 
-        rank: 2,
-        id: "02",
-        name: "가나 쵸코우유",
-        score: 70,
-        nutriFacts: {
-            "열량": {content: 500, unit: "kcal"},
-            "나트륨": {content: 90, unit: "mg"},
-            "단백질": {content: 7, unit: "g"}
-        },
-        imageUrl: "https://sitem.ssgcdn.com/18/79/44/item/1000644447918_i1_1200.jpg"
-    },
-    { 
-        rank: 3,
-        id: "03",
-        name: "매일우유 초콜릿",
-        score: 50.1,
-        nutriFacts: {
-            "열량": {content: 500, unit: "kcal"},
-            "나트륨": {content: 90, unit: "mg"},
-            "단백질": {content: 7, unit: "g"}
-        },
-        imageUrl: "https://sitem.ssgcdn.com/88/40/32/item/1000034324088_i1_1200.jpg"
-    }
-];
-
 export default function ComparisonResult() {
+    const [resultData, setResultData] = useState([]);
     const [explanation, setExplanation] = useState("AI 설명을 불러오는 중...");
     const navigate = useNavigate();
+
+useEffect(() => {
+    async function fetchResult() {
+        try {
+            const selectedProducts = JSON.parse(localStorage.getItem("selectedProducts")) || [];
+            const userStandard = JSON.parse(localStorage.getItem("userStandard")) || {};
+
+            const payload = {
+                selected_products: selectedProducts.map(p => p.name),
+                user_standard: userStandard
+            };
+
+            const res = await fetch("http://127.0.0.1:8002/api/compare_products", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            console.log("📌 FastAPI 응답:", data);
+
+            // ⭐ FastAPI 응답 변환해서 화면에 표시
+            const formatted = (data.comparison_table || []).map((item, idx) => ({
+                rank: idx + 1,
+                name: item.품명,
+                score: item.final_score_100,
+                imageUrl: selectedProducts.find(p => p.name === item.품명)?.imageUrl,
+                nutriFacts: Object.fromEntries(
+                    Object.entries(item)
+                        .filter(([key]) => key !== "품명" && !(key.includes("z_") || key.includes("_score")))
+                        .map(([key, value]) => [key, { content: value, unit: "" }])
+                )
+            }));
+
+            setResultData(formatted);
+            setExplanation(data.ai_summary || "설명 없음");
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    fetchResult();
+}, []);
 
     return (
         <div className="flex flex-col min-h-screen bg-white">

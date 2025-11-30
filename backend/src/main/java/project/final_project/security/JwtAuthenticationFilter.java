@@ -1,9 +1,7 @@
 package project.final_project.security;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,7 +9,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import java.io.IOException;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -35,10 +37,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String requestURI = request.getRequestURI();
 
         // ✅ 1️⃣ AI 분석 요청은 JWT 인증 없이 통과시킴
-        if (requestURI.startsWith("/api/ai")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        if (requestURI.startsWith("/api/ai")
+           || requestURI.startsWith("/api/chatbot")
+           || requestURI.startsWith("/api/products")
+           || requestURI.startsWith("/api/search")
+           || requestURI.startsWith("/api/compare")) {
+
+           filterChain.doFilter(request, response);
+           return;
+}
+
 
         // ✅ 2️⃣ Authorization 헤더에서 토큰 추출
         String header = request.getHeader("Authorization");

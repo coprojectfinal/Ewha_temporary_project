@@ -15,7 +15,7 @@ export default function Chatbot() {
 
     const navigate = useNavigate();
 
-    const sendMessage = (text) => {
+    const sendMessage = async (text) => {
         if (!text.trim()) return;
 
         const userMessage = { id: Date.now(), role: "user", text: text.trim() };
@@ -23,6 +23,34 @@ export default function Chatbot() {
         setInput("");
 
         // API 호출
+        try {
+        const res = await fetch("http://localhost:8080/api/chatbot/ask", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                user_id: "1",  // 나중에 로그인 연동하면 아이디로 바꾸면 됨
+                message: text
+            })
+        });
+
+        const data = await res.json();
+
+        const botMessage = {
+            id: Date.now() + 1,
+            role: "assistant",
+            text: data.reply
+        };
+
+        setMessages((prev) => [...prev, botMessage]);
+
+    } catch (err) {
+        const errMsg = {
+            id: Date.now() + 1,
+            role: "assistant",
+            text: "⚠️ 응답 오류: " + err.message
+        };
+        setMessages((prev) => [...prev, errMsg]);
+    }
     };
 
     const handleSubmit = (e) => {

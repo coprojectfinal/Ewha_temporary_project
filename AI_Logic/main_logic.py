@@ -21,7 +21,7 @@ load_dotenv(dotenv_path="C:/Users/User/Desktop/스프링/final-project/AI_Logic/
 # 🔹 환경변수 로드
 # ---------------------------------------------------------
 load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key="OPENAI_API_KEY")
 
 # ---------------------------------------------------------
 # 🔹 FastAPI 초기화
@@ -33,7 +33,7 @@ app = FastAPI(title="main_logic")
 # ---------------------------------------------------------
 RDS_HOST = "RDS_HOST"
 RDS_USER = "RDS_USER"
-RDS_PW = "RDS_PASSWORD"
+RDS_PW = "RDS_PW"
 
 # ---------------------------------------------------------
 # 🔹 요청 바디 정의
@@ -83,7 +83,7 @@ def analyze(body: RequestBody):
     # ✅ 1. 사용자 정보 불러오기
     try:
         conn = mysql.connector.connect(
-            host=RDS_HOST, user=RDS_USER, password=RDS_PW, database="user_info_db"
+            host=RDS_HOST, user=RDS_USER, password=RDS_PW, database="product_db"
         )
         user_df = pd.read_sql(
             "SELECT user_id, allergies, medical_conditions FROM user_private WHERE user_id = %s",

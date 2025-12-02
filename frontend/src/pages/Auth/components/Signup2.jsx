@@ -7,9 +7,9 @@ const allergens = [
     "닭고기", "돼지고기", "쇠고기", "아황산류"
 ];
 
-export default function Signup2({ formData, setFormData }) {
+export default function Signup2({ userForm, setUserForm }) {
     const handleToggle = (allergenItem) => {
-        setFormData((prev) => {
+        setUserForm((prev) => {
             const alreadySelected = prev.allergies.includes(allergenItem);
             return {
                 ...prev,
@@ -38,7 +38,7 @@ export default function Signup2({ formData, setFormData }) {
 
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
                 {allergens.map((allergenItem) => {
-                    const isSelected = formData.allergies.includes(allergenItem);
+                    const isSelected = userForm.allergies.includes(allergenItem);
 
                     return (
                         <button

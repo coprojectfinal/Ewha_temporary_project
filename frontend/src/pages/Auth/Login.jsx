@@ -1,18 +1,18 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import api from "../../api/axios"; // axios 인스턴스
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import api from '../../api/axios' // axios 인스턴스
 
 export default function Login() {
-  const [formData, setFormData] = useState({
+  const [credentials, setCredentials] = useState({
     id: "",
-    password: "",
+    password: ""
   });
 
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setCredentials((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -20,8 +20,8 @@ export default function Login() {
     try {
       // 1️⃣ 로그인 요청
       const res = await api.post("/auth/login", {
-        username: formData.id,
-        password: formData.password,
+        username: credentials.id,
+        password: credentials.password
       });
 
       const token = res.data.accessToken;
@@ -29,7 +29,7 @@ export default function Login() {
 
       // 2️⃣ 로그인 성공 후 사용자 정보 1회만 요청
       const meRes = await api.get("/api/users/me", {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       console.log("📍 getMyInfo 응답:", meRes.data);
@@ -57,15 +57,14 @@ export default function Login() {
     }
   };
 
-
-
-
-
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <div className="flex justify-center items-center mt-[73px]">
-        <img src="/logo.svg" className="w-20 sm:w-[100px]" alt="로고" />
-      </div>
+      <Link
+        to="/"
+        className="flex justify-center items-center mt-[73px]"
+      >
+        <img src="/logo.svg" className="w-[75px] sm:w-[100px]" alt="로고" />
+      </Link>
 
       <div className="w-full max-w-xl mx-auto px-5 mt-[50px]">
         <form onSubmit={handleSubmit} className="w-full">
@@ -73,28 +72,28 @@ export default function Login() {
             type="text"
             name="id"
             placeholder="아이디"
-            value={formData.id}
+            value={credentials.id}
             onChange={handleChange}
             className="w-full h-[57px] px-[30px] mb-[17px] rounded-[27px]
-                     border border-[#CCCCCC] placeholder:text-[#CCCCCC] focus:outline-none"
+                    border border-[#CCCCCC] placeholder:text-[#CCCCCC] focus:outline-none"
             required
           />
           <input
             type="password"
             name="password"
             placeholder="비밀번호"
-            value={formData.password}
+            value={credentials.password}
             onChange={handleChange}
             className="w-full h-[57px] px-[30px] mb-[30px] rounded-[27px]
-                     border border-[#CCCCCC] placeholder:text-[#CCCCCC] focus:outline-none"
+                    border border-[#CCCCCC] placeholder:text-[#CCCCCC] focus:outline-none"
             required
           />
 
           <button
             type="submit"
             className="w-full h-[50px] rounded-[25px]
-                     font-medium text-[#FFFFFF] bg-[#003853]
-                     hover:shadow-lg transition"
+                    font-medium text-[#FFFFFF] bg-[#003853]
+                    hover:shadow-lg transition"
           >
             로그인
           </button>
@@ -103,12 +102,12 @@ export default function Login() {
         <button
           onClick={() => navigate("/signup")}
           className="w-full h-[50px] mt-[15px] rounded-[25px]
-                     font-medium text-[#003853] bg-[#A0B9C9]
-                     hover:shadow-lg transition"
+                    font-medium text-[#003853] bg-[#A0B9C9]
+                    hover:shadow-lg transition"
         >
           회원가입
         </button>
       </div>
     </div>
-  );
+  )
 }

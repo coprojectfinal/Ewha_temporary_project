@@ -9,6 +9,7 @@ export default function Chatbot() {
             text: "ProdCheck의 Q&A 챗봇입니다.\n무엇이든 물어보세요!\n\nex) 내 건강 정보에 맞는 밀키트를 찾아줘!" 
         }
     ]);
+    
     const [input, setInput] = useState("");
 
     const bottomRef = useRef(null);
@@ -67,6 +68,7 @@ export default function Chatbot() {
             {/* 상단 내비게이션 */}
             <header className="fixed top-0 left-0 z-50 bg-white w-full h-[67px] flex items-center justify-between px-[20px]">
                 <button 
+                    type="button"
                     onClick={() => navigate(-1)}
                     className="hover:scale-105 transition"
                 >
@@ -76,6 +78,7 @@ export default function Chatbot() {
                     챗봇
                 </h1>
                 <button 
+                    type="button"
                     onClick={() => navigate("/")}
                     className="hover:scale-105 transition"
                 >
@@ -85,7 +88,7 @@ export default function Chatbot() {
 
             {/* 메시지 리스트 */}
             <div
-                className="flex-1 overflow-y-auto px-5 py-[70px] space-y-3"
+                className="flex-1 overflow-y-auto px-5 py-[90px] space-y-3"
             >
                 {messages.map((msg) => (
                     <div

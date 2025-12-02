@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { MagnifyingGlassIcon, CheckIcon, HomeIcon, UserIcon } from '@heroicons/react/24/outline'
 import { CheckCircleIcon, ScaleIcon } from '@heroicons/react/24/solid'
-import api from "../../api/axios";   //백엔드 API 연결
+import api from '../../api/axios'   // 백엔드 API 연결
 
 export default function ProductSelect() {
     const [searchTerm, setSearchTerm] = useState("");
@@ -13,20 +13,20 @@ export default function ProductSelect() {
 
     // 상품 선택 토글
     const handleToggle = (product) => {
-      setSelectedProducts(prev => {
-        const exists = prev.find(p => p.id === product.id);
+        setSelectedProducts(prev => {
+            const exists = prev.find(p => p.id === product.id);
 
-        if (exists) {
-            return prev.filter(p => p.id !== product.id);
-        } else {
-            if (prev.length >= 5) {
-                alert("최대 5개까지만 선택 가능합니다");
-                return prev;
+            if (exists) {
+                return prev.filter(p => p.id !== product.id);
+            } else {
+                if (prev.length >= 5) {
+                    alert("최대 5개까지만 선택 가능합니다");
+                    return prev;
+                }
+                return [...prev, product];  // 전체 객체 저장
             }
-            return [...prev, product];  // 전체 객체 저장
-        }
-    })
-};
+        })
+    };
 
     // 서버에서 상품 불러오기
     const fetchProducts = async (search = "") => {
@@ -38,7 +38,6 @@ export default function ProductSelect() {
                     order: "asc",
                 }
             });
-
             setProducts(response.data);  // 실제 데이터 저장
         } catch (error) {
             console.error("상품 검색 중 오류:", error);
@@ -59,8 +58,11 @@ export default function ProductSelect() {
     return (
         <div className="flex flex-col min-h-screen bg-white">
             {/* 검색 */}
-            <header className="fixed top-0 left-0 z-50 bg-white flex items-center w-full h-[67px] px-[30px]">
-                <img src="/logo.svg" className="w-[45px] mt-[5px]" alt="로고" />
+            <header 
+                className="fixed top-0 left-0 z-50 bg-white
+                flex items-center w-full pt-[5px] px-[30px] pb-[15px]"
+            >
+                <img src="/logo.svg" className="w-[50px] mt-[5px]" alt="로고" />
                 <div className="relative flex-1 max-w-full sm:max-w-lg ml-2.5 mt-3">
                     <form onSubmit={handleSearch}>
                         <input
@@ -141,6 +143,10 @@ export default function ProductSelect() {
             <button
                 type="button"
                 onClick={() => {
+                    if (selectedProducts.length < 2) {
+                        alert("비교를 위해 최소 2개 이상의 상품을 선택해주세요");
+                        return;
+                    }
                     localStorage.setItem("selectedProducts", JSON.stringify(selectedProducts));
                     navigate("/comparison/setting-criteria");
                 }}

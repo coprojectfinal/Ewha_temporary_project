@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useParams, Link } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import api from '../api/axios'
 import { ArrowLeftIcon, HomeIcon, XCircleIcon } from '@heroicons/react/24/solid'
 
@@ -13,7 +13,7 @@ export default function NutritionFacts() {
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [explanation, setExplanation] = useState("AI 설명을 불러오는 중...");
 
-  // 1) 내 정보 불러오기
+  // 사용자 정보 불러오기
   useEffect(() => {
     const loadMe = async () => {
       try {
@@ -27,7 +27,7 @@ export default function NutritionFacts() {
     loadMe();
   }, [navigate]);
 
-  // 2) 상품 정보 불러오기
+  // 상품 정보 불러오기
   useEffect(() => {
     if (!id) return;
     api
@@ -42,7 +42,7 @@ export default function NutritionFacts() {
     ]);
   }, [id]);
 
-  // 3) 스크롤 잠금
+  // 스크롤 잠금
   useEffect(() => {
     if (isOpen) {
       const scrollY = window.scrollY;
@@ -58,7 +58,7 @@ export default function NutritionFacts() {
     }
   }, [isOpen]);
 
-  // 4) AI 설명 요청 (FastAPI로 user_id와 상품명 전달)
+  // AI 설명 요청 (FastAPI로 user_id와 상품명 전달)
   const fetchAIExplanation = async () => {
     if (!product) {
       alert("상품 정보가 없습니다.");
@@ -66,7 +66,7 @@ export default function NutritionFacts() {
     }
 
     try {
-      // ✅ 로그인 시 저장된 user_id 확인 (백엔드 로그인 성공 시 localStorage에 저장해야 함)
+      // 로그인 시 저장된 user_id 확인 (백엔드 로그인 성공 시 localStorage에 저장해야 함)
       const userId = localStorage.getItem("user_id");
 
       if (!userId) {
@@ -76,7 +76,7 @@ export default function NutritionFacts() {
 
       console.log("📤 전송할 데이터:", { user_id: userId, product_name: product.name });
 
-      // ✅ Spring → FastAPI로 전달되는 JSON 구조에 맞춤
+      // Spring → FastAPI로 전달되는 JSON 구조에 맞춤
       const res = await api.post("/api/ai/analyze", {
         user_id: String(userId),
         product_name: product.name,
@@ -84,7 +84,7 @@ export default function NutritionFacts() {
 
       console.log("✅ FastAPI 응답:", res.data);
 
-      // ✅ FastAPI 응답 중 ai_description 키 확인
+      // FastAPI 응답 중 ai_description 키 확인
       const aiText =
         res.data?.ai_description ??
         res.data?.aiDescription ??
@@ -132,15 +132,15 @@ export default function NutritionFacts() {
         : '✅ 등록된 알레르기가 없어요.';
 
     potentialAllergyNote =
-      matchedPotential.length > 0 ? `⚠️ ${matchedPotential.join(', ')} 혼입 가능성이 있어요.` : null;
+      matchedPotential.length > 0 ? `⚠️ 제조 과정에서 ${matchedPotential.join(', ')}의 혼입 가능성이 있어요.` : null;
   } catch (e) {
     console.error('알레르기 비교 오류:', e);
   }
 
   const suitability = {
-    suitable: { text: '적합', color: 'text-green-600' },
-    unsuitable: { text: '부적합', color: 'text-red-600' },
-    caution: { text: '주의가 필요', color: 'text-yellow-600' },
+    suitable: { text: '적합', color: 'text-green-500' },
+    unsuitable: { text: '부적합', color: 'text-red-500' },
+    caution: { text: '주의가 필요', color: 'text-yellow-500' },
   };
 
   const userAll = (me.allergies || '').split(',').map((s) => s.trim()).filter(Boolean);
@@ -152,31 +152,46 @@ export default function NutritionFacts() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <header className="fixed top-0 left-0 bg-white w-full flex items-center justify-between p-3 shadow">
-        <button onClick={() => navigate(-1)} className="hover:scale-105 transition">
-          <ArrowLeftIcon className="w-7 h-7" />
+      <header className="fixed top-0 left-0 bg-white w-full h-[67px] flex items-center justify-between px-5">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="hover:scale-105 transition"
+        >
+          <ArrowLeftIcon width={25} height={25}/>
         </button>
-        <Link to="/" className="hover:scale-105 transition">
-          <HomeIcon className="w-7 h-7" />
-        </Link>
+        <button
+          type="button"
+          onClick={() => navigate("/")}
+          className="hover:scale-105 transition"
+        >
+          <HomeIcon width={25} height={25}/>
+        </button>
       </header>
 
-      <main className="grid grid-cols-1 md:grid-cols-2 pt-[52px] pb-[70px]">
-        <div className="w-full max-w-md mx-auto md:mt-[75px]">
+      <main className="grid grid-cols-1 md:grid-cols-2 py-[70px]">
+        <div className="w-full max-w-[360px] mx-auto md:mt-[75px]">
           <img
             src={product.imageUrl}
             alt={`${product.name} 이미지`}
-            className="w-full h-[360px] md:h-full object-cover"
+            className="w-full aspect-square object-cover"
           />
         </div>
 
         <div className="md:mt-[50px]">
-          <div className="w-full text-lg font-medium p-3">{product.name}</div>
-          <div className="w-full h-2.5 bg-[#EAEAEA]"></div>
-          <div className="w-full font-medium px-6 py-3 mb-2 border-b border-[#EAEAEA]">영양 정보</div>
-          <div className="w-full font-light px-6 py-3 space-y-2">
+          <div className="w-full text-xl font-medium p-3">
+            {product.name}
+          </div>
+          <div className="w-full h-2.5 bg-[#EAEAEA]"/>
+          <div className="w-full text-base font-medium px-6 py-3 mb-2 border-b border-[#EAEAEA]">
+            영양 정보
+          </div>
+          <div className="w-full px-6 py-3 space-y-2">
             {items.map((item) => (
-              <div key={item.label} className="flex justify-between text-sm md:text-base">
+              <div
+                key={item.label}
+                className="flex justify-between font-light text-sm md:text-base"
+              >
                 <span>{item.label}</span>
                 <span>
                   {item.value} {item.unit}
@@ -188,28 +203,33 @@ export default function NutritionFacts() {
       </main>
 
       <button
+        type="button"
         onClick={() => {
           setIsOpen(true);
           fetchAIExplanation();
         }}
-        className="fixed bottom-0 left-0 w-full py-5 h-[63px] font-semibold md:text-lg text-white bg-[#003853]"
+        className="fixed bottom-0 left-0 w-full py-5 h-[63px] 
+        font-semibold text-xl text-white bg-[#003853]"
       >
         상품 적합성 판단하기
       </button>
 
       {isOpen && (
         <div className="fixed inset-0 flex items-end md:items-center justify-center bg-black bg-opacity-50 z-50">
-          <div
-            className="flex flex-col bg-white p-5 relative w-full md:w-1/2 h-[80%] md:h-[80%]
+          <div className="flex flex-col bg-white p-5 relative w-full md:w-1/2 h-[80%]
                           rounded-t-2xl rounded-b-none md:rounded-2xl"
           >
-            <button onClick={() => setIsOpen(false)} className="absolute top-3 right-3">
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="absolute top-3 right-3"
+            >
               <XCircleIcon className="w-9 h-9 text-[#EAEAEA]" />
             </button>
 
             <div className="mt-10 overflow-y-auto flex-1">
               <div className="bg-[#EAEAEA] rounded-xl p-3 text-center">
-                <p className="text-lg font-medium">
+                <p className="text-xl font-medium">
                   이 상품은 {me.nickname ?? me.username} 님께{' '}
                   <span className={suitability[resultStatus].color}>
                     {suitability[resultStatus].text}
@@ -218,33 +238,35 @@ export default function NutritionFacts() {
                 </p>
               </div>
 
-              <div className="mt-3 space-y-1">
-                <p className="font-medium">{allergyNote}</p>
-                {potentialAllergyNote && <p className="font-medium">{potentialAllergyNote}</p>}
+              <div className="mt-3 py-[5px] space-y-[5px]">
+                <p className="text-base font-medium">{allergyNote}</p>
+                {potentialAllergyNote && <p className="text-base font-medium">{potentialAllergyNote}</p>}
               </div>
 
-              <div className="mt-3 py-3 border-t border-[#CCCCCC]">
+              <div className="mt-3 px-0.5 py-3 border-t border-[#CCCCCC]">
                 <p className="whitespace-pre-line">{explanation}</p>
               </div>
 
               <div className="mt-3 p-3 border-t border-[#CCCCCC]">
-                <p className="font-light">이런 상품도 추천해요 😆</p>
+                <p className="text-lg font-light">이런 상품도 추천해요 😆</p>
               </div>
-              <div className="p-1 grid grid-cols-3 gap-3">
+              <div className="p-1.5 grid grid-cols-3 gap-3">
                 {recommendedProducts.map((p) => (
                   <div
                     key={p.id}
-                    className="p-1 w-full max-w-[150px] mx-auto shadow hover:scale-105 transition"
+                    className="p-[3px] w-full max-w-[150px] mx-auto hover:scale-105 transition"
                   >
-                    <div className="w-full h-[100px] lg:h-[150px] mb-3">
+                    <div className="w-full mb-3">
                       <img
                         src={p.image}
                         alt={`${p.name} 이미지`}
-                        className="w-full h-full object-cover border-[#EAEAEA] rounded"
+                        className="w-full aspect-square object-cover border-[0.5px] border-[#CCCCCC]"
                       />
                     </div>
-                    <div className="h-12 flex items-start">
-                      <span className="font-normal line-clamp-2">{p.name}</span>
+                    <div className="h-12 mt-1.5 flex items-start">
+                      <span className="text-left text-base font-normal line-clamp-2 overflow-hidden">
+                        {p.name}
+                      </span>
                     </div>
                   </div>
                 ))}

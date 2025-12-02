@@ -6,9 +6,9 @@ const diseaseItems = [
     "고콜레스테롤혈증", "통풍", "골다공증"
 ];
 
-export default function Signup3({ formData, setFormData }) {
+export default function Signup3({ userForm, setUserForm }) {
     const handleToggle = (diseaseItem) => {
-        setFormData((prev) => {
+        setUserForm((prev) => {
             const alreadySelected = prev.diseases.includes(diseaseItem);
             return {
                 ...prev,
@@ -37,7 +37,7 @@ export default function Signup3({ formData, setFormData }) {
 
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
                 {diseaseItems.map((diseaseItem) => {
-                    const isSelected = formData.diseases.includes(diseaseItem);
+                    const isSelected = userForm.diseases.includes(diseaseItem);
 
                     return (
                         <button

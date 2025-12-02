@@ -1,14 +1,14 @@
 import { PlusIcon, MinusIcon } from '@heroicons/react/24/outline'
 
-const nutrientOptions = [
+const nutriOptions = [
     "칼로리", "나트륨", "탄수화물", "당류", 
     "지방", "트랜스지방", "포화지방", 
     "콜레스테롤", "단백질"
 ];
 
-export default function Signup4({ formData, setFormData }) {
+export default function Signup4({ userForm, setUserForm }) {
     const handleChange = (index, key, value) => {
-        setFormData(prev => {
+        setUserForm(prev => {
             const updatedAdjustments = prev.adjustments.map((item, i) =>
                 i === index ? { ...item, [key]: value } : item
             );
@@ -17,7 +17,7 @@ export default function Signup4({ formData, setFormData }) {
     };
 
     const handleAddAdjustment = () => {
-        setFormData(prev => ({
+        setUserForm(prev => ({
             ...prev,
             adjustments: [
                 ...prev.adjustments,
@@ -27,7 +27,7 @@ export default function Signup4({ formData, setFormData }) {
     };
 
     const handleRemoveAdjustment = (index) => {
-        setFormData(prev => ({
+        setUserForm(prev => ({
             ...prev,
             adjustments: prev.adjustments.filter((_, i) => i !== index)
         }));
@@ -43,7 +43,7 @@ export default function Signup4({ formData, setFormData }) {
             </div>
 
             <div className="space-y-[15px]">
-                {formData.adjustments.map((adj, index) => (
+                {userForm.adjustments.map((adj, index) => (
                     <div
                         key={index}
                         className="flex items-center space-x-[9px]"
@@ -58,10 +58,10 @@ export default function Signup4({ formData, setFormData }) {
                             }
                             className="w-[100px] border border-[#CCCCCC] p-[5px] text-sm font-medium"
                         >
-                            <option value="" disabled hidden></option>
-                            {nutrientOptions.map((nutrient) => (
-                                <option key={nutrient} value={nutrient}>
-                                    {nutrient}
+                            <option value="" disabled hidden />
+                            {nutriOptions.map((nutri) => (
+                                <option key={nutri} value={nutri}>
+                                    {nutri}
                                 </option>
                             ))}
                         </select>
@@ -76,7 +76,7 @@ export default function Signup4({ formData, setFormData }) {
                             }
                             className="w-[70px] border border-[#CCCCCC] p-[5px] text-sm font-medium"
                         >
-                            <option value="" disabled hidden></option>
+                            <option value="" disabled hidden/>
                             <option value="늘리고">늘리고</option>
                             <option value="줄이고">줄이고</option>
                         </select>
@@ -84,7 +84,7 @@ export default function Signup4({ formData, setFormData }) {
                         <span className="text-sm font-medium whitespace-nowrap">싶어요.</span>
 
                         {/* 추가/삭제 버튼 */}
-                        {index === formData.adjustments.length - 1 ? (
+                        {index === userForm.adjustments.length - 1 ? (
                             <button
                                 type="button"
                                 onClick={handleAddAdjustment}

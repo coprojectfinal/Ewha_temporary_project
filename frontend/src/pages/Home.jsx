@@ -18,7 +18,7 @@ export default function Home() {
         <div className="flex flex-col min-h-screen bg-white">
             {/* 로고 */}
             <div className="flex justify-center items-center mt-[150px]">
-                <img src="/logo.svg" className="w-20 sm:w-[100px]" alt="로고" />
+                <img src="/logo.svg" className="w-[90px] sm:w-[100px]" alt="로고" />
             </div>
 
             {/* 검색창 */}

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ResponsiveContainer, BarChart, XAxis, YAxis, Bar, Cell } from 'recharts';
+import { ResponsiveContainer, BarChart, XAxis, YAxis, Bar, Cell } from 'recharts'
 import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 import { HomeIcon, DocumentCheckIcon } from '@heroicons/react/24/solid'
 
@@ -12,67 +12,73 @@ const rankColors = {
     5: "#3D82AB"
 }
 
-// 프론트 테스트용 비교 결과 데이터
-// 실제는 BE에서 받아오기 (rank 순서대로)
 export default function ComparisonResult() {
     const [resultData, setResultData] = useState([]);
     const [explanation, setExplanation] = useState("AI 설명을 불러오는 중...");
     const navigate = useNavigate();
 
-useEffect(() => {
-    async function fetchResult() {
-        try {
-            const selectedProducts = JSON.parse(localStorage.getItem("selectedProducts")) || [];
-            const userStandard = JSON.parse(localStorage.getItem("userStandard")) || {};
+    useEffect(() => {
+        async function fetchResult() {
+            try {
+                const selectedProducts = JSON.parse(localStorage.getItem("selectedProducts")) || [];
+                const userStandard = JSON.parse(localStorage.getItem("userStandard")) || {};
 
-            const payload = {
-                selected_products: selectedProducts.map(p => p.name),
-                user_standard: userStandard
-            };
+                const unitMap = {
+                    칼로리: "kcal",
+                    나트륨: "mg",
+                    콜레스테롤: "mg"
+                };
 
-            const res = await fetch("http://127.0.0.1:8002/api/compare_products", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
+                const payload = {
+                    selected_products: selectedProducts.map(p => p.name),
+                    user_standard: userStandard
+                };
 
-            const data = await res.json();
-            console.log("📌 FastAPI 응답:", data);
+                const res = await fetch("http://127.0.0.1:8002/api/compare_products", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
 
-            // ⭐ FastAPI 응답 변환해서 화면에 표시
-            const formatted = (data.comparison_table || []).map((item, idx) => ({
-                rank: idx + 1,
-                name: item.품명,
-                score: item.final_score_100,
-                imageUrl: selectedProducts.find(p => p.name === item.품명)?.imageUrl,
-                nutriFacts: Object.fromEntries(
-                    Object.entries(item)
-                        .filter(([key]) => key !== "품명" && !(key.includes("z_") || key.includes("_score")))
-                        .map(([key, value]) => [key, { content: value, unit: "" }])
-                )
-            }));
+                const data = await res.json();
+                console.log("📌 FastAPI 응답:", data);
 
-            setResultData(formatted);
-            setExplanation(data.ai_summary || "설명 없음");
+                // ⭐ FastAPI 응답 변환해서 화면에 표시
+                const formatted = (data.comparison_table || []).map((item, idx) => ({
+                    rank: idx + 1,
+                    name: item.품명,
+                    score: item.final_score_100,
+                    imageUrl: selectedProducts.find(p => p.name === item.품명)?.imageUrl,
+                    nutriFacts: Object.fromEntries(
+                        Object.entries(item)
+                            .filter(([key]) => key !== "품명" && !(key.includes("z_") || key.includes("_score")))
+                            .map(([key, value]) => [key, { content: value, unit: unitMap[key] || "g" }])
+                    )
+                }));
 
-        } catch (error) {
-            console.error(error);
+                setResultData(formatted);
+                setExplanation(data.ai_summary || "설명 없음");
+
+            } catch (error) {
+                console.error(error);
+            }
         }
-    }
 
-    fetchResult();
-}, []);
+        fetchResult();
+    }, []);
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
             <header className="fixed top-0 left-0 z-50 bg-white w-full h-[67px] flex items-center justify-between px-[20px]">
                 <button 
+                    type="button"
                     onClick={() => navigate(-1)}
                     className="hover:scale-105 transition"
                 >
                     <ArrowLeftIcon width={25} height={25}/>
                 </button>
                 <button 
+                    type="button"
                     onClick={() => navigate("/")}
                     className="hover:scale-105 transition"
                 >
@@ -80,7 +86,7 @@ useEffect(() => {
                 </button>
             </header>
 
-            <main className="px-[15px] py-[70px]">
+            <div className="px-[15px] py-[70px]">
                 <div className="flex items-center w-full px-[5px] pb-5 border-b-[0.5px] border-[#CCCCCC]">
                     <DocumentCheckIcon width={22} height={22} fill="#10B981"/>
                     <span className="ml-[11px] text-[22px] font-medium">비교 완료!</span>
@@ -143,9 +149,11 @@ useEffect(() => {
                 {/* 상세 설명 */}
                 <div className="w-full px-[5px] py-5 space-y-5">
                     <p className="text-[17px] font-medium">상세 설명</p>
-                    <p className="whitespace-pre-line text-[15px] md:text-base font-light">{explanation}</p>
+                    <p className="whitespace-pre-line text-[15px] md:text-base font-light">
+                        {explanation}
+                    </p>
                 </div>
-            </main>
+            </div>
         </div>
     )
 }

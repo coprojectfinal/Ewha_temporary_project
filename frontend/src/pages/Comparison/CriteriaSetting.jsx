@@ -51,12 +51,14 @@ export default function CriteriaSetting() {
         <div className="flex flex-col min-h-screen bg-white">
             <header className="fixed top-0 left-0 z-50 bg-white w-full h-[67px] flex items-center justify-between px-[20px]">
                 <button 
+                    type="button"
                     onClick={handleBack}
                     className="hover:scale-105 transition"
                 >
                     <ArrowLeftIcon width={25} height={25}/>
                 </button>
                 <button 
+                    type="button"
                     onClick={() => navigate("/")}
                     className="hover:scale-105 transition"
                 >
@@ -88,7 +90,7 @@ export default function CriteriaSetting() {
             <button 
                 onClick={handleContinue}
                 className="fixed bottom-0 left-0 w-full h-[63px] py-5 
-                font-semibold md:text-lg text-white bg-[#003853]"
+                font-semibold text-xl text-white bg-[#003853]"
             >
                 {step === 1 ? "다음 단계" : "비교하기"}
             </button>

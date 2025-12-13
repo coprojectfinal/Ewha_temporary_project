@@ -6,6 +6,11 @@
 ## 소스 코드
 
 ## 설치 방법
+다음 환경이 사전에 설치되어 있다고 가정
+
+- Python
+- Java
+- Node.js
 
 ### AI_Logic
 pip install
@@ -20,8 +25,9 @@ npm install
 
 ### AI_Logic
 cd AI_Logic
+uvicorn suitability_and_recommendation:app --host 0.0.0.0 --port 8000
 uvicorn chatbot_logic:app --host 0.0.0.0 --port 8001
-uvicorn compare_products:app --host 0.0.0.0 --port 8001
+uvicorn compare_products:app --host 0.0.0.0 --port 8002
 
 ### backend
 cd backend

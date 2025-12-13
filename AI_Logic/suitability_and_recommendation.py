@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-적합도 판단 + 추천 시스템 (FastAPI + OpenAI + MySQL)
+적합성 판단 + 추천 시스템 (FastAPI + OpenAI + MySQL)
 """
 
 import os
@@ -14,6 +14,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
+from sklearn.metrics.pairwise import cosine_similarity
 
 # =====================================================
 # 🔹 로깅 설정
@@ -29,7 +30,7 @@ if not logger.handlers:
 # =====================================================
 # 🔹 FastAPI 초기화
 # =====================================================
-app = FastAPI(title="적합도 판단 + 추천 시스템 API")
+app = FastAPI(title="적합성 판단 + 추천 시스템 API")
 
 origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
 app.add_middleware(
@@ -52,7 +53,7 @@ client = OpenAI(
 # =====================================================
 RDS_HOST = "RDS_HOST"
 RDS_USER = "RDS_USER"
-RDS_PW = "RDS_PW"
+RDS_PW   = "RDS_PW"
 
 # =====================================================
 # 🔹 요청 데이터 구조
@@ -90,6 +91,58 @@ health_condition_rules = {
     "고콜레스테롤혈증": {"콜레스테롤": "low", "포화지방": "low"},
     "통풍": {"단백질": "low"},
 }
+
+# =====================================================
+# 🔹 추천 로직 함수 (analyze 확장용)
+# =====================================================
+def recommend_products(df, product_name, user_allergies, top_k=3):
+    # 후보 풀 만들기
+    def has_allergy(row, allergy_list):
+        text = str(row.get("알레르기", "")).lower()
+        return any(a.lower() in text for a in allergy_list)
+
+    pool_df = df[~df.apply(lambda r: has_allergy(r, user_allergies), axis=1)].copy()
+    pool_df = pool_df[pool_df["품명"] != product_name].copy()
+
+    # 유사도 계산용 영양성분 컬럼
+    raw_cols = ["열량", "칼로리", "나트륨", "당류", "탄수화물", "지방", "단백질",
+    "콜레스테롤", "포화지방", "트랜스지방", "칼슘", "카페인"]
+    nutr_cols = [c for c in raw_cols if c in df.columns]
+
+    # per-100 기준 변환
+    def to_per100_frame(x):
+        out = {}
+        total = float(x.get("개별내용량", 100)) or 100
+        for c in nutr_cols:
+            try:
+                out[c] = float(x.get(c, np.nan)) / total * 100
+            except:
+                out[c] = np.nan
+        return pd.Series(out)
+
+    base_row = df[df["품명"] == product_name].iloc[0]
+    base_vec = to_per100_frame(base_row)
+    pool_per100 = pool_df.apply(to_per100_frame, axis=1)
+
+    # 결측치 보정
+    fill_vals = pool_per100.median()
+    pool_per100 = pool_per100.fillna(fill_vals)
+    base_vec = base_vec.fillna(fill_vals)
+
+    # 코사인 유사도 계산
+    sim = cosine_similarity([base_vec.values], pool_per100.values)[0]
+    pool_df = pool_df.assign(similarity=sim).sort_values("similarity", ascending=False)
+
+    # 상위 3개 추출
+    top_df = pool_df.head(top_k)
+    return [
+        {
+            "id": int(r["id"]),
+            "name": r["품명"],
+            "image_url": r["상품이미지링크"]
+        }
+        for _, r in top_df.iterrows()
+    ]
 
 
 # =====================================================
@@ -192,22 +245,26 @@ def analyze(body: RequestBody):
     try:
         nutrition_summary = ", ".join([f"{n['nutrient']}({n['evaluation']})" for n in nutrition_results])
         prompt = f"""
-제품명: {product_name}
-사용자 알레르기: {', '.join(user_allergies) if user_allergies else '없음'}
-건강목표: {', '.join(user_goals) if user_goals else '없음'}
-성분 평가 요약: {nutrition_summary}
-최종 판정: {final}
-경고 문구: {warning_text}
-"""
+            제품명: {product_name}
+            사용자 알레르기: {', '.join(user_allergies) if user_allergies else '없음'}
+            건강목표: {', '.join(user_goals) if user_goals else '없음'}
+            성분 평가 요약: {nutrition_summary}
+            최종 판정: {final}
+            경고 문구: {warning_text}
+        """
         res = client.responses.create(model="gpt-4.1-mini", input=prompt, temperature=0.3)
         reason = res.output_text.strip()
     except Exception as e:
         logger.error(f"[AI] 오류: {e}")
         reason = "(AI 설명 생성 실패)"
 
-    # 8️⃣ 결과 반환 (영문 key로 통일)
+    # 8️⃣ 추천 결과
+    recommendations = recommend_products(df, product_name, user_allergies, top_k=3)
+
+    # 9️⃣ 결과 반환
     return {
         "ai_description": reason,
         "nutrition_analysis": nutrition_results,
-        "indirect_allergy": warning_text
+        "indirect_allergy": warning_text,
+        "recommendations" : recommendations
     }

@@ -12,6 +12,7 @@ export default function NutritionFacts() {
   const [isOpen, setIsOpen] = useState(false);
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [explanation, setExplanation] = useState("AI 설명을 불러오는 중...");
+  const [isRecommendationLoading, setIsRecommendationLoading] = useState(true);
 
   // 사용자 정보 불러오기
   useEffect(() => {
@@ -34,13 +35,16 @@ export default function NutritionFacts() {
       .get(`/api/products/${id}`)
       .then((res) => setProduct(res.data))
       .catch((err) => console.error('상품 불러오기 오류:', err));
-
-    setRecommendedProducts([
-      { id: 101, name: '큰컵 불닭볶음면', image: 'https://sitem.ssgcdn.com/59/99/83/item/0000008839959_i1_1200.jpg' },
-      { id: 102, name: '큰컵 탱글 머쉬룸크림파스타', image: 'https://sitem.ssgcdn.com/16/91/48/item/1000697489116_i1_1200.jpg' },
-      { id: 103, name: '뽀로로짜장', image: 'https://sitem.ssgcdn.com/73/21/55/item/1000683552173_i1_1200.jpg' },
-    ]);
   }, [id]);
+
+  // 상품 변경 -> AI 상태 리셋
+  useEffect(() => {
+    if (!id) return;
+
+    setExplanation("AI 설명을 불러오는 중...");
+    setRecommendedProducts([]);
+    setIsRecommendationLoading(true);
+  }, [id])
 
   // 스크롤 잠금
   useEffect(() => {
@@ -58,15 +62,14 @@ export default function NutritionFacts() {
     }
   }, [isOpen]);
 
-  // AI 설명 요청 (FastAPI로 user_id와 상품명 전달)
-  const fetchAIExplanation = async () => {
+  // AI 요청
+  const fetchAI = async () => {
     if (!product) {
       alert("상품 정보가 없습니다.");
       return;
     }
 
     try {
-      // 로그인 시 저장된 user_id 확인 (백엔드 로그인 성공 시 localStorage에 저장해야 함)
       const userId = localStorage.getItem("user_id");
 
       if (!userId) {
@@ -74,7 +77,7 @@ export default function NutritionFacts() {
         return;
       }
 
-      console.log("📤 전송할 데이터:", { user_id: userId, product_name: product.name });
+      //console.log("📤 전송할 데이터:", { user_id: userId, product_name: product.name });
 
       // Spring → FastAPI로 전달되는 JSON 구조에 맞춤
       const res = await api.post("/api/ai/analyze", {
@@ -82,7 +85,7 @@ export default function NutritionFacts() {
         product_name: product.name,
       });
 
-      console.log("✅ FastAPI 응답:", res.data);
+      //console.log("✅ FastAPI 응답:", res.data);
 
       // FastAPI 응답 중 ai_description 키 확인
       const aiText =
@@ -91,12 +94,19 @@ export default function NutritionFacts() {
         "AI 설명을 불러올 수 없습니다.";
 
       setExplanation(aiText);
+
+      // 추천 상품 세팅
+      setRecommendedProducts( 
+        res.data.recommendations ?? []
+      );
     } catch (err) {
       console.error("❌ AI 요청 실패:", err);
       setExplanation("AI 설명을 불러올 수 없습니다.");
+      setRecommendedProducts([]); // 실패 시 추천 초기화
+    } finally {
+      setIsRecommendationLoading(false); 
     }
   };
-
 
   if (!product || !me) {
     return <p className="text-center mt-10">로딩 중...</p>;
@@ -140,7 +150,7 @@ export default function NutritionFacts() {
   const suitability = {
     suitable: { text: '적합', color: 'text-green-500' },
     unsuitable: { text: '부적합', color: 'text-red-500' },
-    caution: { text: '주의가 필요', color: 'text-yellow-500' },
+    caution: { text: '주의가 필요', color: 'text-yellow-500' }
   };
 
   const userAll = (me.allergies || '').split(',').map((s) => s.trim()).filter(Boolean);
@@ -206,7 +216,7 @@ export default function NutritionFacts() {
         type="button"
         onClick={() => {
           setIsOpen(true);
-          fetchAIExplanation();
+          fetchAI();
         }}
         className="fixed bottom-0 left-0 w-full py-5 h-[63px] 
         font-semibold text-xl text-white bg-[#003853]"
@@ -238,27 +248,40 @@ export default function NutritionFacts() {
                 </p>
               </div>
 
-              <div className="mt-3 py-[5px] space-y-[5px]">
+              <div className="mt-[15px] py-[5px] space-y-[5px]">
                 <p className="text-base font-medium">{allergyNote}</p>
                 {potentialAllergyNote && <p className="text-base font-medium">{potentialAllergyNote}</p>}
               </div>
 
-              <div className="mt-3 px-0.5 py-3 border-t border-[#CCCCCC]">
+              <div className="mt-2.5 px-[5px] py-[15px] border-t border-[#CCCCCC]">
                 <p className="whitespace-pre-line">{explanation}</p>
               </div>
 
-              <div className="mt-3 p-3 border-t border-[#CCCCCC]">
-                <p className="text-lg font-light">이런 상품도 추천해요 😆</p>
+              <div className="px-2.5 py-[15px] border-t border-[#CCCCCC]">
+                <p className="text-lg font-light">
+                  {isRecommendationLoading
+                    ? "추천 상품을 불러오는 중이에요 ⏳"
+                    : recommendedProducts.length === 0
+                      ? "추천할 수 있는 상품이 없어요 🥲"
+                      : resultStatus === 'unsuitable'
+                        ? "대신 이런 상품을 추천해요 😆"
+                        : "이런 상품도 추천해요 😆"
+                  }
+                </p>
               </div>
               <div className="p-1.5 grid grid-cols-3 gap-3">
                 {recommendedProducts.map((p) => (
                   <div
                     key={p.id}
+                    onClick={() => {
+                      setIsOpen(false);
+                      navigate(`/product/${p.id}`)
+                    }}
                     className="p-[3px] w-full max-w-[150px] mx-auto hover:scale-105 transition"
                   >
                     <div className="w-full mb-3">
                       <img
-                        src={p.image}
+                        src={p.image_url}
                         alt={`${p.name} 이미지`}
                         className="w-full aspect-square object-cover border-[0.5px] border-[#CCCCCC]"
                       />

@@ -6,6 +6,8 @@
 
 ## 코드 구성
 
+| 디렉토리 | 설명 |
+|----------|-----------|
 | AI_Logic | FastAPI 기반 (Python) |
 | Backend  | Spring Boot 기반 (Java) |
 | Frontend | React 기반 (JavaScript) |
@@ -20,8 +22,6 @@
 - MySQL (AWS RDS)
 - OpenAI API Key
 
-**샘플 데이터**
-
 **실행 전 설정**
 
 AI_Logic의 `.env.example` 파일을 기준으로 `.env` 파일을 생성하고, 환경 변수를 설정
@@ -30,7 +30,6 @@ AI_Logic의 `.env.example` 파일을 기준으로 `.env` 파일을 생성하고,
 OPENAI_API_KEY=
 
 DB_HOST=
-DB_NAME=
 DB_USER=
 DB_PASSWORD=
 ```
@@ -84,8 +83,8 @@ npm run dev
 ## 테스트 방법
 
 1. 홈 화면 하단 내비게이션에서 '마이페이지' 클릭
-2. 회원가입 후 로그인
-3. 홈 화면에서 확인하고자 하는 가공식품 검색
+2. 아이디 ewha2025, 비밀번호 ewha2025로 로그인 
+3. 홈 화면에서 확인하고자 하는 가공식품 검색 ('라면', '주스' 등)
 4. 클릭하여 영양 정보 확인 후 하단의 '적합성 판단하기' 버튼 클릭
 5. 적합성 판단 결과 확인 후 모달 창을 닫고 우측 상단 홈 아이콘 클릭
 6. 하단 내비게이션의 '상품 비교' 클릭

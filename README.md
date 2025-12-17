@@ -5,9 +5,10 @@
 
 
 ## 코드 구성
-- AI_Logic : FastAPI 기반
-- backend : Spring Boot 기반
-- frontend : React 기반
+
+| AI_Logic | FastAPI 기반 (Python) |
+| Backend  | Spring Boot 기반 (Java) |
+| Frontend | React 기반 (JavaScript) |
 
 ## 실행 방법
 
@@ -19,9 +20,23 @@
 - MySQL (AWS RDS)
 - OpenAI API Key
 
+**샘플 데이터**
+
 **실행 전 설정**
+
+AI_Logic의 `.env.example` 파일을 기준으로 `.env` 파일을 생성하고, 환경 변수를 설정
+
+```
+OPENAI_API_KEY=
+
+DB_HOST=
+DB_NAME=
+DB_USER=
+DB_PASSWORD=
+```
+
 backend/src/main/resources의 `application-example.properties` 파일을 기준으로 
-`application.properties` 파일을 생성하고, Spring Boot 데이터소스를 설정합니다. 
+`application.properties` 파일을 생성하고, Spring Boot 데이터소스를 설정
 
 ```
 spring.datasource.url=jdbc:mysql://[????]:3306/[DB??]

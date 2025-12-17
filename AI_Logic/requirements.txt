@@ -1,0 +1,16 @@
+# Web framework & server
+fastapi
+pydantic
+python-dotenv
+uvicorn
+
+# Data processing & analysis
+numpy
+pandas
+scikit-learn
+
+# Database
+mysql-connector-python
+
+# LLM
+openai

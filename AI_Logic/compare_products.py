@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import mysql.connector
@@ -10,20 +12,26 @@ import traceback # 오류 로그 출력을 위해 추가
 # ---------------------------------------------------------
 # 0️⃣ 기본 설정
 # ---------------------------------------------------------
-# 🚨 실제 RDS 정보로 대체 필요
-RDS_HOST = "RDS_HOST"
-RDS_USER = "RDS_USER"
-RDS_PW   = "RDS_PW"
-RDS_DB   = "product_db"
+load_dotenv()  # .env 파일 불러오기
 
-# 🚨 실제 API 키로 대체 필요
-client = OpenAI(api_key="OPENAI_API_KEY")
+RDS_HOST = os.getenv("DB_HOST")
+RDS_USER = os.getenv("DB_USER")
+RDS_PW   = os.getenv("DB_PASSWORD")
+
+if not all([RDS_HOST, RDS_USER, RDS_PW]):
+    raise ValueError("DB 관련 환경 변수가 하나 이상 비어있습니다")
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다")
+
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 RDS_CFG = {
     "host": RDS_HOST,
     "user": RDS_USER,
     "password": RDS_PW,
-    "database": RDS_DB
+    "database": "product_db"
 }
 
 app = FastAPI(title="compare_products")

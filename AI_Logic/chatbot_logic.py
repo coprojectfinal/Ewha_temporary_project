@@ -7,6 +7,7 @@
 """
 
 import os
+from dotenv import load_dotenv
 import re
 import pandas as pd
 import mysql.connector
@@ -17,11 +18,20 @@ from openai import OpenAI
 # ---------------------------------------------------------
 # 🔹 환경 설정
 # ---------------------------------------------------------
-RDS_HOST = "RDS_HOST"
-RDS_USER = "RDS_USER"
-RDS_PW   = "RDS_PW"
+load_dotenv()  # .env 파일 불러오기
 
-client = OpenAI(api_key="OPENAI_API_KEY")
+RDS_HOST = os.getenv("DB_HOST")
+RDS_USER = os.getenv("DB_USER")
+RDS_PW   = os.getenv("DB_PASSWORD")
+
+if not all([RDS_HOST, RDS_USER, RDS_PW]):
+    raise ValueError("DB 관련 환경 변수가 하나 이상 비어있습니다")
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다")
+
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 app = FastAPI(title="chatbot_logic")
 

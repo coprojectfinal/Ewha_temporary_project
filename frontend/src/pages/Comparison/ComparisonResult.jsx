@@ -99,9 +99,9 @@ export default function ComparisonResult() {
 
                 {/* 상품들 */}
                 <div className="w-full px-[5px] py-[25px] flex flex-col space-y-[25px] border-b-[0.5px] border-[#CCCCCC]">
-                    {resultData.map((item) => (
+                    {resultData.map((item, index) => (
                         <div 
-                            key={item.id}
+                            key={item.id ?? index}
                             className="flex items-center w-full h-[100px] md:h-[150px] lg:h-[200px]"
                         >
                             <div
@@ -269,9 +269,9 @@ function ResultBarChart({ resultData, rankColors }) {
                                 formatter: (value) => value.toFixed(1)
                             }}
                         >
-                            {resultData.map((item) => (
+                            {resultData.map((item, index) => (
                                 <Cell
-                                    key={item.id}
+                                    key={item.id ?? index}
                                     fill={rankColors[item.rank] ?? "#FFFFFF"}
                                 />
                             ))}

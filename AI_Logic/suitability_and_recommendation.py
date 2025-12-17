@@ -4,6 +4,7 @@
 """
 
 import os
+from dotenv import load_dotenv
 import math
 import json
 import logging
@@ -15,6 +16,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
 from sklearn.metrics.pairwise import cosine_similarity
+
+# =====================================================
+# 🔹 .env 로드
+# =====================================================
+load_dotenv()  # .env 파일 불러오기
 
 # =====================================================
 # 🔹 로깅 설정
@@ -42,18 +48,23 @@ app.add_middleware(
 )
 
 # =====================================================
-# 🔹 OpenAI API Key
+# 🔹 OpenAI API Key (환경 변수)
 # =====================================================
-client = OpenAI(
-    api_key="OPENAI_API_KEY"
-)
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다")
+
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 # =====================================================
-# 🔹 RDS 연결
+# 🔹 RDS 연결 (환경 변수)
 # =====================================================
-RDS_HOST = "RDS_HOST"
-RDS_USER = "RDS_USER"
-RDS_PW   = "RDS_PW"
+RDS_HOST = os.getenv("DB_HOST")
+RDS_USER = os.getenv("DB_USER")
+RDS_PW   = os.getenv("DB_PASSWORD")
+
+if not all([RDS_HOST, RDS_USER, RDS_PW]):
+    raise ValueError("DB 관련 환경 변수가 하나 이상 비어있습니다")
 
 # =====================================================
 # 🔹 요청 데이터 구조

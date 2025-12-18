@@ -76,7 +76,7 @@ cd frontend
 # 의존성 설치
 npm install
 
-# 실행
+# 실행 후 출력되는 주소로 접속
 npm run dev
 ```
 
